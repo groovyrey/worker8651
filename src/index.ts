@@ -382,8 +382,12 @@ async function route(request: Request, env: Env): Promise<Response> {
     }
 
     const data: any = await upstream.json();
-    const text = data?.candidates?.[0]?.content?.parts
-      ?.map((p: any) => p?.text || '')
+    const parts: any[] = data?.candidates?.[0]?.content?.parts ?? [];
+    // Gemma emits its chain-of-thought as a part carrying a `thought` field.
+    // Return only the final-answer parts (no `thought` key).
+    const text = parts
+      .filter((p: any) => p && 'thought' in p === false)
+      .map((p: any) => p?.text || '')
       .join('') || '';
     return json({ model, text });
   }
