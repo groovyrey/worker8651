@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "worker8651",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-12-01",
+  "vars": {
+    "GITHUB_CLIENT_ID": "Ov23li1LIFi0idEOdINE"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "demo-db",
+      "database_id": "f9ae3989-985d-488b-bb51-c9e8341bb2b3"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "groovyrey-images"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "traces": {
+      "enabled": true,
+      "persist": true
+    }
+  }
+}
