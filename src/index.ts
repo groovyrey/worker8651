@@ -90,26 +90,41 @@ async function firstRow<T = any>(db: D1Database, sql: string, ...binds: unknown[
 async function checkRateLimit(db: D1Database, ip: string, key: string): Promise<boolean> {
   const limit = RATE_LIMITS[key] || RATE_LIMITS['default:GET'];
   const [max, window] = limit;
-  const cutoff = Math.floor(Date.now() / 1000) - window;
+  const now = Math.floor(Date.now() / 1000);
+  const cutoff = now - window;
 
-  const existing = await firstRow<{ count: number }>(
+  const existing = await firstRow<{ count: number; window_start: number }>(
     db,
-    'SELECT COUNT(*) as count FROM rate_limits WHERE ip = ? AND key = ? AND ts > ?',
-    ip, key, cutoff,
+    'SELECT count, window_start FROM rate_limits WHERE ip = ? AND key = ?',
+    ip, key,
   );
 
-  if ((existing?.count ?? 0) >= max) return false;
+  if (!existing) {
+    await db.prepare(
+      'INSERT INTO rate_limits (ip, key, count, window_start) VALUES (?, ?, 1, ?)',
+    ).bind(ip, key, now).run();
+    return true;
+  }
+
+  if (existing.window_start < cutoff) {
+    // Window expired: reset the count for this new window
+    await db.prepare(
+      'UPDATE rate_limits SET count = 1, window_start = ? WHERE ip = ? AND key = ?',
+    ).bind(now, ip, key).run();
+    return true;
+  }
+
+  if (existing.count >= max) return false;
 
   await db.prepare(
-    'INSERT INTO rate_limits (ip, key, ts) VALUES (?, ?, ?)',
-  ).bind(ip, key, Math.floor(Date.now() / 1000)).run();
+    'UPDATE rate_limits SET count = count + 1 WHERE ip = ? AND key = ?',
+  ).bind(ip, key).run();
 
   return true;
 }
 
 async function cleanupRateLimits(db: D1Database): Promise<void> {
-  const cutoff = Math.floor(Date.now() / 1000) - 300; // keep 5 min
-  await db.prepare('DELETE FROM rate_limits WHERE ts < ?').bind(cutoff).run();
+  await db.prepare('DELETE FROM rate_limits WHERE window_start < ?').bind(Math.floor(Date.now() / 1000) - 300).run();
 }
 
 async function route(request: Request, env: Env): Promise<Response> {
@@ -372,6 +387,13 @@ async function route(request: Request, env: Env): Promise<Response> {
       },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        systemInstruction: {
+          parts: [{ text: 'Respond with only the final answer. Do not include any reasoning, chain-of-thought, or internal deliberation. Just give the direct response.' }],
+        },
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048,
+        },
       }),
     });
 

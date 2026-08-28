@@ -18,3 +18,11 @@ CREATE TABLE IF NOT EXISTS groovyrey_comments (
 );
 CREATE INDEX IF NOT EXISTS idx_comments_created ON groovyrey_comments (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_comments_ip_created ON groovyrey_comments (ip, created_at);
+
+CREATE TABLE IF NOT EXISTS rate_limits (
+  ip TEXT NOT NULL,
+  key TEXT NOT NULL,
+  count INTEGER NOT NULL DEFAULT 1,
+  window_start INTEGER NOT NULL,
+  PRIMARY KEY (ip, key)
+);
