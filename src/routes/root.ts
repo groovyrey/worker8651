@@ -17,7 +17,7 @@ export const rootRoute: Route = async (request) => {
       '/api/messages (GET, POST, DELETE)',
       '/api/groovyrey/comments (GET, POST, DELETE)',
       '/api/groovyrey/admin/comments (GET, admin-only)',
-      '/api/groovyrey/gemini (POST, AI generation)',
+      '/api/groovyrey/gemini (POST, AI generation; optional system, temperature, json, maxTokens)',
     ],
   });
 };
