@@ -1,8 +1,8 @@
-import { ALLOWED_ORIGIN, LOCAL_ORIGIN, CORS_METHODS, CORS_HEADERS } from '../constants';
+import { ALLOWED_ORIGIN, LOCAL_ORIGIN, PRIVATE_ORIGIN, CORS_METHODS, CORS_HEADERS } from '../constants';
 
 export function isAllowedOrigin(origin: string | null): boolean {
-  if (!origin) return true;
-  return origin === ALLOWED_ORIGIN || LOCAL_ORIGIN.test(origin);
+  if (!origin || origin === 'null') return true;
+  return origin === ALLOWED_ORIGIN || LOCAL_ORIGIN.test(origin) || PRIVATE_ORIGIN.test(origin);
 }
 
 export function corsHeaders(origin: string | null): Record<string, string> {

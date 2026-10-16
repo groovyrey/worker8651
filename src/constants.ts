@@ -1,5 +1,6 @@
 export const ALLOWED_ORIGIN = 'https://groovyrey.github.io';
-export const LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+export const LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:\d+)?$/;
+export const PRIVATE_ORIGIN = /^https?:\/\/(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(:\d+)?$/;
 export const CORS_METHODS = 'GET, POST, DELETE, OPTIONS';
 export const CORS_HEADERS = 'Content-Type, X-Admin-Key';
 
